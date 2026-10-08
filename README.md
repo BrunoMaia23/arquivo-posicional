@@ -16,13 +16,9 @@ TR00000300000040000010300000500000000
 Arquivo posicional ainda é como muita troca de dados entre instituições acontece: linhas de largura
 fixa, um tipo de registro nas duas primeiras posições, cada campo numa coluna combinada num manual.
 Trabalhei na migração de um importador desses, de um sistema em Delphi para Python, e escrevi a maior
-parte dela. Este repositório refaz as ideias principais do zero, com um layout inventado e dados
-fictícios.
-
-*In English: loading a fixed-width, multi-record-type file into a database. A declarative layout,
-errors reported by line and field, a trailer check, and a diff-based load (insert, update only the
-changed fields, leave identical rows alone, replace child rows with history, explicit deletes), with
-dry-run and safe reprocessing. Synthetic data.*
+parte dela. Lá o layout tem mais tipos de registro, o destino é o Oracle, e a maior parte do trabalho foi
+paridade com o sistema antigo: conferir, tabela por tabela, os inserts, updates e deletes do Python
+contra os do Delphi. O layout daqui é inventado, assim como os dados; as ideias são as mesmas.
 
 ## O layout
 
@@ -62,7 +58,7 @@ registro EX, e é recusada se a obra ainda tiver fonograma.
 A remessa inteira é uma transação. Remessa já aplicada é recusada, a não ser com `--reprocessar`, e
 reprocessar uma remessa tem que dar "igual" em tudo. `--dry-run` aplica, mostra o relatório e desfaz.
 
-## A demo
+## Três remessas
 
 ```bash
 python -m venv .venv && source .venv/bin/activate    # Windows: .venv\Scripts\activate
@@ -112,17 +108,3 @@ python -m posicional demo
       remessa: o trailer diz 14 registros OP e o arquivo tem 15
       recusada: nada foi aplicado
 ```
-
-## No projeto real
-
-O layout tem mais tipos de registro, alguns com subtipos, e o destino é o Oracle. A maior parte do
-trabalho foi paridade com o sistema antigo: conferir, tabela por tabela, os inserts, updates e deletes
-do Python contra os do Delphi, e manter o log no formato que a equipe já sabia ler. As execuções
-manuais rodam com dry-run, e uma trava impede apontar para produção fora do Airflow.
-
-## Testes
-
-`pytest` cobre a conversão de cada tipo de campo, escrita e leitura devolvendo o mesmo conteúdo (com
-acento), a remessa com defeitos, o layout sem campos sobrepostos, e a carga: inicial e reprocesso sem
-efeito, update por diferença, histórico das participações, dry-run, flag inválida barrada pelo banco e
-exclusão recusada.
